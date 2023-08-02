@@ -1,0 +1,19 @@
+{
+  "name": "mp4_reducer",
+  "version": "1.0.0",
+  "description": "A web application that uses Handbrake to convert videos to MP4's.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alfred-delacosta/mp4_reducer.git"
+  },
+  "author": "Alfred De La Costa",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/alfred-delacosta/mp4_reducer/issues"
+  },
+  "homepage": "https://github.com/alfred-delacosta/mp4_reducer#readme"
+}
