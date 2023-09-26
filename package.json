@@ -1,0 +1,36 @@
+{
+  "dependencies": {
+    "bootstrap": "^5.3.2",
+    "dotenv": "^16.3.1",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "nodemon": "^3.0.1",
+    "socket.io": "^4.7.2"
+  },
+  "name": "mp4_reducer_and_converter",
+  "version": "1.0.0",
+  "main": "app.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "dev": "nodemon ./app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alfred-delacosta/mp4_reducer.git"
+  },
+  "keywords": [
+    "mp4",
+    "handbrake",
+    "converter"
+  ],
+  "author": "Alfred De La Costa",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alfred-delacosta/mp4_reducer/issues"
+  },
+  "homepage": "https://github.com/alfred-delacosta/mp4_reducer#readme",
+  "description": ""
+}
