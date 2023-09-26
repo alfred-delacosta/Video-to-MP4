@@ -10,7 +10,7 @@ const { createServer } = require('node:http');
 
 //#region Multer
 const multer = require('multer');
-const upload = multer({dest: './uploads'});
+const upload = multer({dest: './uploads', preservePath: true});
 //#endregion
 
 //#region Socket.io
@@ -45,11 +45,55 @@ app.get('/', (req, res) => {
     res.render("index");
 })
 
-app.post('/convertVideo', upload.single('video'), (req, res, next) => {
+app.post('/convertVideo', upload.single('video'), async (req, res, next) => {
+    let handbrakePath = "";
     const file = req.file;
+    // Rename the file and add the video type
+    await fs.rename(path.join(__dirname, file.path), path.join(__dirname, 'uploads', `${file.originalname}`));
+    const videoName = file.originalname.split('.mp4')[0].trim();
+
     webSocket.emit('uploadAndConversionStatus', {
         msg: 'Test'
     })
+
+    try {
+        let dirs = await fs.opendir(handBrakeCliProgramLocation);
+        for await (const dirFile of dirs) {
+            if (dirFile.name.toLocaleLowerCase().includes('handbrakecli')) {
+                handbrakePath = dirFile.path;
+            }
+        }
+
+        const inputField = `-i ${path.join(__dirname, 'uploads', file.originalname)}`;
+        const outputField = `-o ${path.join(__dirname, 'convertedVideos', `${videoName}.mp4`)}`;
+    
+
+        console.log(`${handbrakePath}`);
+        console.log(`-i ${path.join(__dirname, 'uploads', file.originalname)}`);
+        console.log(`-o ${path.join(__dirname, 'convertedVideos', `${videoName}.mp4`)}`)
+
+        // const handbrakeCliCmd = spawn(`${handbrakePath}`, [`-i ${path.join(__dirname, 'uploads', file.originalname)}`, `-o ${path.join(__dirname, 'convertedVideos', `${videoName}.mp4`)}`], { cwd: path.join(__dirname, 'uploads')});
+        const handbrakeCliCmd = spawn(`${handbrakePath}`, [inputField, outputField], { cwd: path.join(__dirname, 'uploads')});
+
+        //#region spawn listeners
+        handbrakeCliCmd.stdout.on('data', (data) => {
+            console.log(`data: ${data}`)
+            // webSocket.emit('uploadAndConversionStatus', {
+            //     msg: `${data}`
+            // })
+        })
+
+        handbrakeCliCmd.stderr.on('data', (data) => {
+            console.error(`stderr: ${data}`);
+          });
+
+        handbrakeCliCmd.on('close', (data) => {
+            
+          });
+        //#endregion
+    } catch (error) {
+        res.status(400).send({error: error.msg})
+    }
 })
 
 if (process.env.ENVIRONMENT === "DEV") {

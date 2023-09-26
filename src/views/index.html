@@ -7,17 +7,16 @@
                 Please select a video to upload and convert
             </h1>
         </div>
-        <form action="/convertVideo" method="post" class="col-12 col-sm-10" enctype="multipart/form-data">
+        <form id="videoUploadForm" action="/convertVideo" method="post" class="col-12 col-sm-10" enctype="multipart/form-data">
             <div class="mb-3">
-                <label for="formFile" class="form-label">Default file input example</label>
-                <input class="form-control" type="file" name="video" id="formFile">
+                <label for="formVideoFile" class="form-label">Default file input example</label>
+                <input class="form-control" type="file" name="video" id="formVideoFile" required>
             </div>
             <div class="d-grid">
-                <button class="btn btn-primary" type="submit">Submit</button>
+                <button id="submitVideoBtn" class="btn btn-primary" type="submit" disabled><i class="bi bi-cloud-arrow-up"></i> Upload</button>
             </div>
         </form>
-        <div class="col-12 col-sm-10">
-            <h2>Status</h2>
+        <div class="col-12 col-sm-10 mt-3">
             <div class="form-floating">
                 <textarea class="form-control" placeholder="Upload and conversion status" id="uploadAndConversionStatus"></textarea>
                 <label for="uploadAndConversionStatus">Status</label>
