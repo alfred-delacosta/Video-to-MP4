@@ -89,7 +89,7 @@ app.post('/convertVideo', upload.single('video'), async (req, res, next) => {
             })
 
             // res.sendFile(convertedFileName, options)
-            res.download(path.join(__dirname, 'convertedVideos', convertedFileName))
+            res.download(path.join(__dirname, 'convertedVideos', convertedFileName), convertedFileName)
         });
         //#endregion
     } catch (error) {
