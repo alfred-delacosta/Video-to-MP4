@@ -68,22 +68,25 @@ app.post('/convertVideo', upload.single('video'), async (req, res, next) => {
 
         //#region spawn listeners
         handbrakeCliCmd.stdout.on('data', (data) => {
+            console.log(`stdout: ${data}`);
             webSocket.emit('uploadAndConversionStatus', {
                 msg: `${data}`
             })
         })
 
         handbrakeCliCmd.stderr.on('data', (data) => {
-            console.error(`stderr: ${data}`);
+            console.log(`stderr: ${data}`);
+            webSocket.emit('uploadAndConversionStatus', {
+                msg: `${data}`
+            })
           });
 
         handbrakeCliCmd.on('close', async (data) => {
-            console.log(`close: ${data}`)
-            let options = {
-                root: path.join(__dirname, 'convertedVideos')
-            }
+            console.log(`close: ${data}`);
 
-            console.log(path.join(__dirname));
+            webSocket.emit('uploadAndConversionStatus', {
+                msg: `${data}`
+            })
 
             // res.sendFile(convertedFileName, options)
             res.download(path.join(__dirname, 'convertedVideos', convertedFileName))
