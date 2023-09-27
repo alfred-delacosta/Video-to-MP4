@@ -1,16 +1,17 @@
 const socket = io();
 
-//#region Socket.io messages
-socket.on('uploadAndConversionStatus', (serverData) => {
-    console.log(serverData.msg);
-})
-//#endregion
-
 //#region DOM Elements
 let submitVideoBtn = document.getElementById('submitVideoBtn');
 let uploadAndConversionStatus = document.getElementById('uploadAndConversionStatus');
 let formVideoFile = document.getElementById('formVideoFile');
 let videoUploadForm = document.getElementById('videoUploadForm');
+//#endregion
+
+//#region Socket.io messages
+socket.on('uploadAndConversionStatus', (serverData) => {
+    uploadAndConversionStatus.innerText = `${uploadAndConversionStatus.innerText}\n${serverData.msg}`
+    uploadAndConversionStatus.scrollTop = uploadAndConversionStatus.scrollHeight;
+})
 //#endregion
 
 //#region Event Listener
