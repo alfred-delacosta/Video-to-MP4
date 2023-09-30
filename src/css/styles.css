@@ -1,3 +1,8 @@
 #uploadAndConversionStatus {
     max-height: 30vh;
 }
+
+.video-preview {
+    height: 25vh;
+    width: 25vw;
+}

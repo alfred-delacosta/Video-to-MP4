@@ -16,21 +16,27 @@ let uploadVideo = async () => {
     };
 
     const data = await fetch('/convertVideo', options);
-    // The content-disposition header gets set by the express.js res.download() function. It is the filename.
-    let fileName = data.headers.get('Content-Disposition');
-    // Split from the header to just get the name wrapped in quotes
-    fileName = fileName.split('=')[1];
-    // Get just the name outside of quotes
-    fileName = fileName.split('"')[1];
-    const videoBlob = await data;
-    const videoFile = new File([videoBlob], fileName, { type: 'video/mp4'});
+    console.log(data);
+    if (data.status == 200) {
+        window.location.replace(data.url);
+    } else {
+        alert(await data.text());
+    }
+    // // The content-disposition header gets set by the express.js res.download() function. It is the filename.
+    // let fileName = data.headers.get('Content-Disposition');
+    // // Split from the header to just get the name wrapped in quotes
+    // fileName = fileName.split('=')[1];
+    // // Get just the name outside of quotes
+    // fileName = fileName.split('"')[1];
+    // const videoBlob = await data;
+    // const videoFile = new File([videoBlob], fileName, { type: 'video/mp4'});
 
-    // Create an ObjUrl and a link to use to perform an automatic download of the video.
-    let objUrl = window.URL.createObjectURL(videoFile);
-    let link = document.createElement('a');
-    link.href = objUrl;
-    link.download = videoFile.name;
-    link.click();
+    // // Create an ObjUrl and a link to use to perform an automatic download of the video.
+    // let objUrl = window.URL.createObjectURL(videoFile);
+    // let link = document.createElement('a');
+    // link.href = objUrl;
+    // link.download = videoFile.name;
+    // link.click();
 
 }
 //#endregion
