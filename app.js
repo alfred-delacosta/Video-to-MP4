@@ -10,7 +10,7 @@ const { createServer } = require('node:http');
 
 //#region Multer
 const multer = require('multer');
-const upload = multer({dest: './uploads'});
+const upload = multer({dest: './uploads', preservePath: true});
 //#endregion
 
 //#region Socket.io
@@ -38,19 +38,69 @@ app.use(express.static(staticPath))
 
 io.on('connection', (socket) => {
     webSocket = socket;
-    console.log("Connected to the server")
 })
 
 app.get('/', (req, res) => {
     res.render("index");
 })
 
-app.post('/convertVideo', upload.single('video'), (req, res, next) => {
+app.post('/convertVideo', upload.single('video'), async (req, res, next) => {
+    let handbrakeFileName = "";
     const file = req.file;
-    webSocket.emit('uploadAndConversionStatus', {
-        msg: 'Test'
-    })
+    // Rename the file and add the video type
+    await fs.rename(path.join(__dirname, file.path), path.join(__dirname, 'uploads', `${file.originalname}`));
+    const videoName = file.originalname.split('.mp4')[0].trim();
+
+    try {
+        let dirs = await fs.opendir(handBrakeCliProgramLocation);
+        for await (const dirFile of dirs) {
+            if (dirFile.name.toLocaleLowerCase().includes('handbrakecli')) {
+                handbrakeFileName = dirFile.name;
+            }
+        }
+
+        const handbrakeFilePath = path.join(__dirname, 'lib', handbrakeFileName);
+        const convertedFileName = `${videoName}.mp4`;
+        const inputFilePath = `${path.join('.', file.originalname)}`
+        const outputFilePath = `${path.join('..', 'convertedVideos', convertedFileName)}`;
+
+        const handbrakeCliCmd = spawn(handbrakeFilePath, ['-i', inputFilePath, '-o', outputFilePath], { cwd: path.join(__dirname, 'uploads')});
+
+        //#region spawn listeners
+        handbrakeCliCmd.stdout.on('data', (data) => {
+            console.log(`stdout: ${data}`);
+            webSocket.emit('uploadAndConversionStatus', {
+                msg: `${data}`
+            })
+        })
+
+        handbrakeCliCmd.stderr.on('data', (data) => {
+            console.log(`stderr: ${data}`);
+            webSocket.emit('uploadAndConversionStatus', {
+                msg: `${data}`
+            })
+          });
+
+        handbrakeCliCmd.on('close', async (data) => {
+            console.log(`close: ${data}`);
+
+            webSocket.emit('uploadAndConversionStatus', {
+                msg: `${data}`
+            })
+
+            // res.sendFile(convertedFileName, options)
+            res.download(path.join(__dirname, 'convertedVideos', convertedFileName), convertedFileName)
+        });
+        //#endregion
+    } catch (error) {
+        console.log(error);
+        res.status(400).send({error: error.msg})
+    }
 })
+
+// app.get('/convertVideo/:videoName', (req, res) => {
+//     let videoName = 
+// })
 
 if (process.env.ENVIRONMENT === "DEV") {
     server.listen(port, () => {
