@@ -1,0 +1,33 @@
+<%- include('./shared/header', {title: "View Video"}) -%>
+
+<div class="container">
+    <div class="row">
+        <div class="col-12 mt-3 mb-3">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-12 h3 text-center title-wrap">
+                        <%= video.name %>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                        <div class="card shadow">
+                            <video controls>
+                                <source src="<%= video.path %>" type="video/mp4">
+                            </video>
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-center mt-1">
+                    <div class="col-12 col-sm-6 mt-1">
+                        <div class="d-grid">
+                            <a href="<%= video.path %>" class="btn btn-outline-success" download="<%= video.name %>">
+                                Download
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('./shared/footer') -%>

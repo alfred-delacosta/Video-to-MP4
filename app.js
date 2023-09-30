@@ -62,7 +62,7 @@ app.post('/convertVideo', upload.single('video'), async (req, res, next) => {
         const handbrakeFilePath = path.join(__dirname, 'lib', handbrakeFileName);
         const convertedFileName = `${videoName}.mp4`;
         const inputFilePath = `${path.join('.', file.originalname)}`
-        const outputFilePath = `${path.join('..', 'convertedVideos', convertedFileName)}`;
+        const outputFilePath = `${path.join('..', 'src', 'convertedVideos', convertedFileName)}`;
 
         const handbrakeCliCmd = spawn(handbrakeFilePath, ['-i', inputFilePath, '-o', outputFilePath], { cwd: path.join(__dirname, 'uploads')});
 
@@ -81,26 +81,55 @@ app.post('/convertVideo', upload.single('video'), async (req, res, next) => {
             })
           });
 
-        handbrakeCliCmd.on('close', async (data) => {
-            console.log(`close: ${data}`);
+        handbrakeCliCmd.on('exit', async (code) => {
+            console.log(`exit: ${code}`);
 
-            webSocket.emit('uploadAndConversionStatus', {
-                msg: `${data}`
-            })
+            if (code === 0) {
+                webSocket.emit('uploadAndConversionStatus', {
+                    msg: `${code}`
+                })
 
-            // res.sendFile(convertedFileName, options)
-            res.download(path.join(__dirname, 'convertedVideos', convertedFileName), convertedFileName)
-        });
+                // Delete from the uploads folder
+                await fs.rm(`${path.join(__dirname, 'uploads', file.originalname)}`);
+    
+                // res.sendFile(convertedFileName, options)
+                // res.download(path.join(__dirname, 'src', 'convertedVideos', convertedFileName), convertedFileName)
+                res.redirect(`/videos/${convertedFileName}`);
+            } else {
+                await fs.rm(`${path.join(__dirname, 'uploads', file.originalname)}`);
+                res.status(400).send({ code, error: "There was an error with the conversion."})
+            }
+        })
         //#endregion
     } catch (error) {
+        console.log("In the error");
         console.log(error);
-        res.status(400).send({error: error.msg})
+        res.status(400).send(error.msg)
     }
 })
 
-// app.get('/convertVideo/:videoName', (req, res) => {
-//     let videoName = 
-// })
+app.get('/videos/:videoName', async (req, res) => {
+    let videoName = req.params.videoName;
+    let videoLocation = path.join(__dirname, 'src', 'convertedVideos');
+
+    try {
+        const dir = await fs.opendir(videoLocation);
+        for await (const entry of dir) {
+            if (entry.name === videoName) {
+                const relativePath = entry.path.split("src")[1];
+                console.log(relativePath);
+                entry.path = relativePath;
+                console.log(entry);
+                res.render('video', {video: entry})
+                return;
+            }
+        }
+        res.status(404).send('No video found!')
+    } catch (error) {
+        console.log(error);
+        res.status(400).send(error);
+    }
+})
 
 if (process.env.ENVIRONMENT === "DEV") {
     server.listen(port, () => {

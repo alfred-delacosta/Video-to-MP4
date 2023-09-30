@@ -136,4 +136,4 @@ dist
 /uploads/*
 
 # convertedVideos
-/convertedVideos/*
+/src/convertedVideos/*
