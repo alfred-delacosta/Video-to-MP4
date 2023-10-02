@@ -51,7 +51,7 @@ app.get('/', (req, res) => {
 
 app.post('/convertVideo', upload.single('video'), async (req, res, next) => {
     let handbrakeFileName = "";
-    let newTitle = randomBytes(16).toString('hex');
+    let newTitle = randomBytes(parseInt(process.env.RANDOM_NAME_SIZE)).toString('hex');
     const file = req.file;
     // Rename the file and add the video type
     await fs.rename(path.join(__dirname, file.path), path.join(__dirname, 'uploads', `${file.originalname}`));
@@ -69,7 +69,14 @@ app.post('/convertVideo', upload.single('video'), async (req, res, next) => {
         const inputFilePath = `${path.join('.', file.originalname)}`
         const outputFilePath = `${path.join('..', 'src', 'convertedVideos', convertedFileName)}`;
 
-        const handbrakeCliCmd = spawn(handbrakeFilePath, ['-i', inputFilePath, '-o', outputFilePath], { cwd: path.join(__dirname, 'uploads')});
+        let handbrakeCliCmd;
+
+        console.log(process.env.ENV_VAR)
+        if (process.env.ENV_VAR === 'true') {
+            handbrakeCliCmd = spawn('HandBrakeCLI', ['-i', inputFilePath, '-o', outputFilePath], { cwd: path.join(__dirname, 'uploads')});
+        } else {
+            handbrakeCliCmd = spawn(handbrakeFilePath, ['-i', inputFilePath, '-o', outputFilePath], { cwd: path.join(__dirname, 'uploads')});
+        }
 
         //#region spawn listeners
         handbrakeCliCmd.stdout.on('data', (data) => {
