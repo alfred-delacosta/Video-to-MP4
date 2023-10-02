@@ -55,7 +55,6 @@ app.post('/convertVideo', upload.single('video'), async (req, res, next) => {
     const file = req.file;
     // Rename the file and add the video type
     await fs.rename(path.join(__dirname, file.path), path.join(__dirname, 'uploads', `${file.originalname}`));
-    const videoName = file.originalname.split('.mp4')[0].trim();
 
     try {
         let dirs = await fs.opendir(handBrakeCliProgramLocation);
@@ -100,13 +99,9 @@ app.post('/convertVideo', upload.single('video'), async (req, res, next) => {
                     location: `${path.join('/', 'convertedVideos', convertedFileName)}`
                 });
 
-                console.log(newVideo);
-
                 // Delete from the uploads folder
                 await fs.rm(`${path.join(__dirname, 'uploads', file.originalname)}`);
     
-                // res.sendFile(convertedFileName, options)
-                // res.download(path.join(__dirname, 'src', 'convertedVideos', convertedFileName), convertedFileName)
                 res.redirect(`/videos/${newVideo.name}`);
             } else {
                 await fs.rm(`${path.join(__dirname, 'uploads', file.originalname)}`);
@@ -115,7 +110,6 @@ app.post('/convertVideo', upload.single('video'), async (req, res, next) => {
         })
         //#endregion
     } catch (error) {
-        console.log("In the error");
         console.log(error);
         res.status(400).send(error.msg)
     }
@@ -123,37 +117,24 @@ app.post('/convertVideo', upload.single('video'), async (req, res, next) => {
 
 app.get('/videos/:videoName', async (req, res) => {
     let videoName = req.params.videoName;
-    const queryResult = await Videos.findAll({
-        where: {
-            name: videoName
+    try {
+        const queryResult = await Videos.findAll({
+            where: {
+                name: videoName
+            }
+        })
+    
+        if (queryResult.length > 0) {
+            res.render('video', {
+                video: queryResult[0].dataValues
+            })
+        } else {
+            res.send('No video found!')
         }
-    })
-
-    console.log(queryResult[0].dataValues);
-
-    let videoLocation = queryResult[0].dataValues.location;
-
-    res.render('video', {
-        video: queryResult[0].dataValues
-    })
-
-    // try {
-    //     const dir = await fs.opendir(videoLocation);
-    //     for await (const entry of dir) {
-    //         if (entry.name === videoName) {
-    //             const relativePath = entry.path.split("src")[1];
-    //             console.log(relativePath);
-    //             entry.path = relativePath;
-    //             console.log(entry);
-    //             res.render('video', {video: entry})
-    //             return;
-    //         }
-    //     }
-    //     res.status(404).send('No video found!')
-    // } catch (error) {
-    //     console.log(error);
-    //     res.status(400).send(error);
-    // }
+    } catch (error) {
+        console.log(error);
+        res.status(400).send(error);
+    }
 })
 
 if (process.env.ENVIRONMENT === "DEV") {
