@@ -6,6 +6,7 @@ const path = require('path');
 const fs = require('fs/promises');
 const { spawn } = require('child_process');
 const { createServer } = require('node:http');
+const { randomBytes } = require('node:crypto');
 //#endregion
 
 //#region Multer
@@ -15,6 +16,10 @@ const upload = multer({dest: './uploads', preservePath: true});
 
 //#region Socket.io
 const { Server } = require('socket.io');
+//#endregion
+
+//#region DB Models
+const Videos = require('./models/Video');
 //#endregion
 
 const handBrakeCliProgramLocation = path.join(__dirname, 'lib');
@@ -46,6 +51,7 @@ app.get('/', (req, res) => {
 
 app.post('/convertVideo', upload.single('video'), async (req, res, next) => {
     let handbrakeFileName = "";
+    let newTitle = randomBytes(16).toString('hex');
     const file = req.file;
     // Rename the file and add the video type
     await fs.rename(path.join(__dirname, file.path), path.join(__dirname, 'uploads', `${file.originalname}`));
@@ -60,7 +66,7 @@ app.post('/convertVideo', upload.single('video'), async (req, res, next) => {
         }
 
         const handbrakeFilePath = path.join(__dirname, 'lib', handbrakeFileName);
-        const convertedFileName = `${videoName}.mp4`;
+        const convertedFileName = `${newTitle}.mp4`;
         const inputFilePath = `${path.join('.', file.originalname)}`
         const outputFilePath = `${path.join('..', 'src', 'convertedVideos', convertedFileName)}`;
 
@@ -89,12 +95,19 @@ app.post('/convertVideo', upload.single('video'), async (req, res, next) => {
                     msg: `${code}`
                 })
 
+                const newVideo = await Videos.create({
+                    name: newTitle,
+                    location: `${path.join('/', 'convertedVideos', convertedFileName)}`
+                });
+
+                console.log(newVideo);
+
                 // Delete from the uploads folder
                 await fs.rm(`${path.join(__dirname, 'uploads', file.originalname)}`);
     
                 // res.sendFile(convertedFileName, options)
                 // res.download(path.join(__dirname, 'src', 'convertedVideos', convertedFileName), convertedFileName)
-                res.redirect(`/videos/${convertedFileName}`);
+                res.redirect(`/videos/${newVideo.name}`);
             } else {
                 await fs.rm(`${path.join(__dirname, 'uploads', file.originalname)}`);
                 res.status(400).send({ code, error: "There was an error with the conversion."})
@@ -110,25 +123,37 @@ app.post('/convertVideo', upload.single('video'), async (req, res, next) => {
 
 app.get('/videos/:videoName', async (req, res) => {
     let videoName = req.params.videoName;
-    let videoLocation = path.join(__dirname, 'src', 'convertedVideos');
-
-    try {
-        const dir = await fs.opendir(videoLocation);
-        for await (const entry of dir) {
-            if (entry.name === videoName) {
-                const relativePath = entry.path.split("src")[1];
-                console.log(relativePath);
-                entry.path = relativePath;
-                console.log(entry);
-                res.render('video', {video: entry})
-                return;
-            }
+    const queryResult = await Videos.findAll({
+        where: {
+            name: videoName
         }
-        res.status(404).send('No video found!')
-    } catch (error) {
-        console.log(error);
-        res.status(400).send(error);
-    }
+    })
+
+    console.log(queryResult[0].dataValues);
+
+    let videoLocation = queryResult[0].dataValues.location;
+
+    res.render('video', {
+        video: queryResult[0].dataValues
+    })
+
+    // try {
+    //     const dir = await fs.opendir(videoLocation);
+    //     for await (const entry of dir) {
+    //         if (entry.name === videoName) {
+    //             const relativePath = entry.path.split("src")[1];
+    //             console.log(relativePath);
+    //             entry.path = relativePath;
+    //             console.log(entry);
+    //             res.render('video', {video: entry})
+    //             return;
+    //         }
+    //     }
+    //     res.status(404).send('No video found!')
+    // } catch (error) {
+    //     console.log(error);
+    //     res.status(400).send(error);
+    // }
 })
 
 if (process.env.ENVIRONMENT === "DEV") {
