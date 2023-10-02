@@ -136,7 +136,7 @@ dist
 /uploads/*
 
 # convertedVideos
-/src/convertedVideos/*
+/src/convertedVideos/*.mp4
 
 # SQL Db
 *.db
