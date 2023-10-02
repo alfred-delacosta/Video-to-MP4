@@ -137,3 +137,6 @@ dist
 
 # convertedVideos
 /src/convertedVideos/*
+
+# SQL Db
+*.db
