@@ -15,6 +15,8 @@ A web application that uses Handbrake CLI to reduce the size of videos and expor
   - PORT can be any port number of your choosing that's available.
   - ENVIRONMENT has to be either DEV or PROD
   - DB_NAME is the name of the database that you want the program to create.
+  - ENV_VAR can be set to true or false and tells the program whether or not HandBrakeCLI needs to be called as a program from the /lib folder or if it called as an Environment Variable.
+  - RANDOM_NAME_SIZE is the amount of bytes that are used to determine that are used in the randomBytes() function.
 - Run npm install and start the program.
 
 ## Future Features
