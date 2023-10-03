@@ -10,7 +10,7 @@ A web application that uses Handbrake CLI to reduce the size of videos and expor
 
 ## Instructions
 - Go to Handbrakes website and download the appropriate CLI for your OS. https://handbrake.fr/downloads2.php
-- Move that file into /lib
+- Move that file into /lib if you are not setting it up as an Environment Variable.
 - Copy the .env.sample to a file named .env and fill the following fields:
   - PORT can be any port number of your choosing that's available.
   - ENVIRONMENT has to be either DEV or PROD
