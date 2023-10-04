@@ -87,7 +87,6 @@ app.post('/convertVideo', upload.single('video'), async (req, res, next) => {
         })
 
         handbrakeCliCmd.stderr.on('data', (data) => {
-            console.log(`stderr: ${data}`);
             webSocket.emit('uploadAndConversionStatus', {
                 msg: `${data}`
             })
@@ -138,6 +137,43 @@ app.get('/videos/:videoName', async (req, res) => {
         } else {
             res.send('No video found!')
         }
+    } catch (error) {
+        console.log(error);
+        res.status(400).send(error);
+    }
+})
+
+app.get('/library', async (req, res) => {
+    try {
+        const queryResult = await Videos.findAll();
+    
+        if (queryResult.length > 0) {
+            res.render('library', { videos: queryResult, emptyLibrary: false});
+        } else {
+            res.render('library', { videos: [], emptyLibrary: true});
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(400).send(error);
+    }
+});
+
+app.delete('/library/:videoId', async (req, res) => {
+    try {
+        const videoId = req.params.videoId;
+
+        const deleteResult = await Videos.destroy({
+            where: {
+                id: videoId
+            }
+        });
+
+        if (deleteResult === 1) {
+            res.status(200).send({msg: 'Video deleted successfully.'});
+        } else {
+            res.status(400).send({msg: 'There was an error deleting the video'});
+        }
+
     } catch (error) {
         console.log(error);
         res.status(400).send(error);
