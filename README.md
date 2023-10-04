@@ -20,8 +20,7 @@ A web application that uses Handbrake CLI to reduce the size of videos and expor
 - Run npm install and start the program.
 
 ## Future Features
-- Add a library page to allow browsing of videos.
-- Add an automatic delete task of the videos after a set amount of hours in the .env file. This will delete the video from storage and delete it from the db.
-- Clean up the server messages to be less detailed and more focused on the percentage of completion done from Handbrake.
+- ~~Add a library page to allow browsing of videos.~~ ✅
+- ~~Clean up the server messages to be less detailed and more focused on the percentage of completion done from Handbrake.~~ ✅
 - Implement a progress bar for the Handbrake conversion instead of just text.
 - Implement user accounts to associate videos with users.
