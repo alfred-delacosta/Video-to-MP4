@@ -7,6 +7,11 @@ const fs = require('fs/promises');
 const { spawn } = require('child_process');
 const { createServer } = require('node:http');
 const { randomBytes } = require('node:crypto');
+const cors = require('cors');
+//#endregion
+
+//#region Express Routers
+const videoRouter = require('./routers/videosRouter');
 //#endregion
 
 //#region Multer
@@ -40,6 +45,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(staticPath))
 //#endregion
+
+app.use(cors());
+
+app.use('/api', videoRouter);
 
 io.on('connection', (socket) => {
     webSocket = socket;
